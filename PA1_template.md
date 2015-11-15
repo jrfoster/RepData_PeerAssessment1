@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 # Introduction
 
@@ -30,7 +25,8 @@ This section contains information and figures to address the requirements of the
 
 To perform the analysis and create the plots, we are using the `dplyr` and `ggplot2` libraries, so we must first load them into the environment.
 
-```{r add_libraries, results="hide"}
+
+```r
 suppressMessages(library(dplyr))
 suppressMessages(library(ggplot2))
 ```
@@ -41,13 +37,15 @@ In this section, we show the code required to load, process and/or transform the
 
 The raw data is in a zip archive, so unzip that archive and read the raw data. Note that we are not allowing the string dates to be converted into factors.
 
-```{r read_rawdata}
+
+```r
 activity <- read.csv(unz("activity.zip", "activity.csv"), stringsAsFactors = FALSE)
 ```
 
 The date variable in the raw data is of class character, and for some of the analysis we require a more formal representation of date, so to the raw data we add a POSIXct date converted from the original string date.
 
-```{r transform_rawdata}
+
+```r
 activity$ctDate <- as.POSIXct(activity$date, format = "%Y-%m-%d")
 ```
 
@@ -57,7 +55,8 @@ In this section, we will calculate the number of steps taken per day, display a 
 
 First, we use `dplyr` to group the data by observation date and aggregate the sum for each day.  Note that in calculating the sum, we are ignoring missing (NA) values.
 
-```{r aggregate_stepsperday}
+
+```r
 stepsPerDay <- activity %>%
    group_by(ctDate) %>%
    summarize(totalSteps = sum(steps, na.rm = TRUE))
@@ -65,7 +64,8 @@ stepsPerDay <- activity %>%
 
 Using this aggregation, we can plot a histogram for the total steps taken per day.
 
-```{r histogram_stepsperday, fig.align='center'}
+
+```r
 ggplot(data = stepsPerDay, aes(totalSteps)) +
    geom_histogram(breaks = seq(0, 25000, by = 5000), col = "black", fill = "cornflowerblue", alpha = .5) +
    ylim(c(0, 30)) +
@@ -78,10 +78,18 @@ ggplot(data = stepsPerDay, aes(totalSteps)) +
    theme_bw(base_family = "Avenir", base_size = 12)
 ```
 
+<img src="PA1_template_files/figure-html/histogram_stepsperday-1.png" title="" alt="" style="display: block; margin: auto;" />
+
 The mean and median values can be calculated and displayed via `summary`.
 
-```{r calculate_meanmedian}
+
+```r
 summary(stepsPerDay$totalSteps)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0    6778   10400    9354   12810   21190
 ```
 
 From this we can see that the mean is approximately 9354 and the median is 10400.
@@ -92,7 +100,8 @@ In this section we will use a time-series plot to determine which interval, on a
 
 We again use `dplyr` to group the data by interval and calculate a mean number of steps across all days.
 
-```{r aggregate_stepsperinterval}
+
+```r
 averages <- activity %>%
    group_by(interval) %>%
    summarize(avgSteps = mean(steps, na.rm = TRUE))
@@ -100,7 +109,8 @@ averages <- activity %>%
 
 Using this aggregation we can plot a time series for the average steps for each interval.
 
-```{r timeseries_stepsperinterval, fig.align='center'}
+
+```r
 ggplot(data = averages, aes(x = interval, y = avgSteps)) +
    geom_line(color = "green4", size = 1) +
    geom_vline(aes(xintercept = as.numeric(averages[which.max(avgSteps), 1])), linetype = "dotted") +
@@ -109,11 +119,25 @@ ggplot(data = averages, aes(x = interval, y = avgSteps)) +
    theme_bw(base_family = "Avenir", base_size = 12)
 ```
 
+<img src="PA1_template_files/figure-html/timeseries_stepsperinterval-1.png" title="" alt="" style="display: block; margin: auto;" />
+
 Note that the plot contains a line showing the maximum daily average, which coincides with the spike at the interval between 750 and 1000. We calculate this exact interval by finding the maximum average from the aggregation.
 
-```{r calculate_maxinterval}
+
+```r
 max(averages$avgSteps)
+```
+
+```
+## [1] 206.1698
+```
+
+```r
 as.numeric(averages[which.max(averages$avgSteps), 1])
+```
+
+```
+## [1] 835
 ```
 
 From this we can see that the maximum average 206.16981 occurs at interval 835.
@@ -126,9 +150,14 @@ Since the raw data contains a number of days/intervals where there are missing v
 
 We can use the `complete.cases` method to determine the number of observations that are missing any data.
 
-```{r calcualte_completecases}
+
+```r
 lvCompletes <- complete.cases(activity)
 length(lvCompletes[lvCompletes == FALSE])
+```
+
+```
+## [1] 2304
 ```
 
 From this, we can see that the number of incomplete cases (those with NAs) is 2304, which is approximately 13% of the data.
@@ -137,7 +166,8 @@ To address the missing values I chose to calculate a mean for each interval for 
 
 To create a dataset containing the necessary imputation data I used `dplyr` to create an aggregation by weekday and interval using the following:
 
-```{r aggregate_meanbydateandinterval}
+
+```r
 imputation <- activity %>% 
    group_by(weekdays(ctDate), interval) %>% 
    summarize(mean = mean(steps, na.rm = TRUE))
@@ -145,13 +175,29 @@ imputation <- activity %>%
 
 The first few observations of this aggregation:
 
-```{r display_imputedhead}
+
+```r
 head(imputation)
+```
+
+```
+## Source: local data frame [6 x 3]
+## Groups: weekdays(ctDate) [1]
+## 
+##   weekdays(ctDate) interval  mean
+##              (chr)    (int) (dbl)
+## 1           Friday        0     0
+## 2           Friday        5     0
+## 3           Friday       10     0
+## 4           Friday       15     0
+## 5           Friday       20     0
+## 6           Friday       25     0
 ```
 
 Using this aggregation, a vector of imputed steps can be calculated by utilizing the following function.
 
-```{r imputation_function}
+
+```r
 getImputedSteps <- function(steps, ctDate, intvl) {
    ifelse(is.na(steps), 
           as.integer(imputation[imputation$`weekdays(ctDate)` == weekdays(ctDate) & 
@@ -162,20 +208,23 @@ getImputedSteps <- function(steps, ctDate, intvl) {
 
 in a call to `apply` using the raw data.  Note that since I chose to use `apply`, rather than `dplyr`, even though the date has been coverted to POSIXct in the raw data, it ends up in the function as character data.
 
-```{r create_imputedvalues}
+
+```r
 v <- apply(activity, 1, function(x) { getImputedSteps(x[1], as.POSIXct(x[4]), as.integer(x[3])) })
 ```
 
 Now create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r add_imputedvalues}
+
+```r
 imputedActivity <- activity
 imputedActivity$steps <- v
 ```
 
 In order to see the effect of our calculations, first recalculate total steps per day.
 
-```{r aggregate_imputedstepsperday}
+
+```r
 imputedStepsPerDay <- imputedActivity %>%
    group_by(ctDate) %>%
    summarize(totalSteps = sum(steps))
@@ -183,7 +232,8 @@ imputedStepsPerDay <- imputedActivity %>%
 
 Using this new aggregation, plot a histogram of the imputed total steps taken per day.
 
-```{r histogram_imputedstepsperday, fig.align='center'}
+
+```r
 ggplot(data = imputedStepsPerDay, aes(totalSteps)) +
    geom_histogram(breaks = seq(0, 25000, by = 5000), col = "black", fill = "cornflowerblue", alpha = .5) +
    ylim(c(0, 40)) +
@@ -196,10 +246,18 @@ ggplot(data = imputedStepsPerDay, aes(totalSteps)) +
    theme_bw(base_family = "Avenir", base_size = 12)
 ```
 
+<img src="PA1_template_files/figure-html/histogram_imputedstepsperday-1.png" title="" alt="" style="display: block; margin: auto;" />
+
 The new mean and median values can be calculated and displayed via `summary`.
 
-```{r summary_imputedstepsperday}
+
+```r
 summary(imputedStepsPerDay$totalSteps)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      41    8918   11020   10810   12810   21190
 ```
 
 Based on the summary data, both the median and mean increased slightly, but also moved closer to the midpoint of the range. Additionally, the minimum value is now 41.  This is largely due to the removal of the zeros from the aggregated step count as a result of our imputing missing values.  There are also, now, more observations around the mean than before, which I attribute to using means for a given weekday.  In the end, using the imputed data shifted the distribution more toward the mean by removing its original left skew due to missing data.
@@ -210,14 +268,16 @@ In this section we use the dataset with the imputed number of steps to separate 
 
 First, use `dplyr` to create a factor variable with two levels "Weekday" and "Weekend" based on the observation date.
 
-```{r calculate_daytypefactor}
+
+```r
 imputedActivity <- imputedActivity %>%
    mutate(dayType = factor(ifelse(weekdays(ctDate) %in% c("Saturday","Sunday"), "Weekend", "Weekday")))
 ```
 
 Next, use `dplyr` to calculate averages for each interval for each type of day
 
-```{r calculate_daytypeaverages}
+
+```r
 imputedAverages <- imputedActivity %>%
    group_by(dayType, interval) %>%
    summarize(avgSteps = mean(steps))
@@ -225,7 +285,8 @@ imputedAverages <- imputedActivity %>%
 
 Now we can plot our time series graphs across that computed factor
 
-```{r timeseries_stepsperdaytype, fig.height=7, fig.width=9, fig.align='center'}
+
+```r
 ggplot(data = imputedAverages, aes(x = interval, y = avgSteps, color = dayType)) +
    geom_line(size = 1) +
    geom_smooth(color = "black", method = "lm", se = TRUE, linetype = "dotted") + 
@@ -234,6 +295,8 @@ ggplot(data = imputedAverages, aes(x = interval, y = avgSteps, color = dayType))
    labs(x = "5-Minute Interval", y = "Average Number of Steps Taken") +
    theme_bw(base_family = "Avenir", base_size = 12)
 ```
+
+<img src="PA1_template_files/figure-html/timeseries_stepsperdaytype-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 Based on the plots, there do seem to be some differences between weekday and weekend activity.  Note the spike in the weekday plot at approximately 8:35am and with most of the higher values coming around that same time (between approximately 8:15 and 9:00). There are other spikes around noon and around 4:30, but the activity level is generally consistent and flat.  From this, one could hypothesize that the person is mostly sedentary for the majority of the day, possibly exercising, or commuting in the mornings, leaving the office for lunch and possibly leaving work and catching a ride instead of walking.
 
