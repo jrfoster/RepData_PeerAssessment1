@@ -225,7 +225,7 @@ imputedAverages <- imputedActivity %>%
 
 Now we can plot our time series graphs across that computed factor
 
-```{r timeseries_stepsperdaytype, fig.height=7, fig.width=9, fig.align='center'}
+```{r timeseries_stepsperdaytype, fig.height=10, fig.width=10, fig.align='center'}
 ggplot(data = imputedAverages, aes(x = interval, y = avgSteps, color = dayType)) +
    geom_line(size = 1) +
    geom_smooth(color = "black", method = "lm", se = TRUE, linetype = "dotted") + 

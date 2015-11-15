@@ -1,4 +1,9 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
 
 # Introduction
 
@@ -78,7 +83,7 @@ ggplot(data = stepsPerDay, aes(totalSteps)) +
    theme_bw(base_family = "Avenir", base_size = 12)
 ```
 
-<img src="PA1_template_files/figure-html/histogram_stepsperday-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figure/histogram_stepsperday-1.png" title="plot of chunk histogram_stepsperday" alt="plot of chunk histogram_stepsperday" style="display: block; margin: auto;" />
 
 The mean and median values can be calculated and displayed via `summary`.
 
@@ -119,7 +124,7 @@ ggplot(data = averages, aes(x = interval, y = avgSteps)) +
    theme_bw(base_family = "Avenir", base_size = 12)
 ```
 
-<img src="PA1_template_files/figure-html/timeseries_stepsperinterval-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figure/timeseries_stepsperinterval-1.png" title="plot of chunk timeseries_stepsperinterval" alt="plot of chunk timeseries_stepsperinterval" style="display: block; margin: auto;" />
 
 Note that the plot contains a line showing the maximum daily average, which coincides with the spike at the interval between 750 and 1000. We calculate this exact interval by finding the maximum average from the aggregation.
 
@@ -246,7 +251,7 @@ ggplot(data = imputedStepsPerDay, aes(totalSteps)) +
    theme_bw(base_family = "Avenir", base_size = 12)
 ```
 
-<img src="PA1_template_files/figure-html/histogram_imputedstepsperday-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figure/histogram_imputedstepsperday-1.png" title="plot of chunk histogram_imputedstepsperday" alt="plot of chunk histogram_imputedstepsperday" style="display: block; margin: auto;" />
 
 The new mean and median values can be calculated and displayed via `summary`.
 
@@ -296,7 +301,7 @@ ggplot(data = imputedAverages, aes(x = interval, y = avgSteps, color = dayType))
    theme_bw(base_family = "Avenir", base_size = 12)
 ```
 
-<img src="PA1_template_files/figure-html/timeseries_stepsperdaytype-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figure/timeseries_stepsperdaytype-1.png" title="plot of chunk timeseries_stepsperdaytype" alt="plot of chunk timeseries_stepsperdaytype" style="display: block; margin: auto;" />
 
 Based on the plots, there do seem to be some differences between weekday and weekend activity.  Note the spike in the weekday plot at approximately 8:35am and with most of the higher values coming around that same time (between approximately 8:15 and 9:00). There are other spikes around noon and around 4:30, but the activity level is generally consistent and flat.  From this, one could hypothesize that the person is mostly sedentary for the majority of the day, possibly exercising, or commuting in the mornings, leaving the office for lunch and possibly leaving work and catching a ride instead of walking.
 
